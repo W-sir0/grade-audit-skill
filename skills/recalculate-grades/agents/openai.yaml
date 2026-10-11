@@ -1,0 +1,4 @@
+interface:
+  display_name: "课程成绩重算与综测核对"
+  short_description: "按学号筛选不及格、核验课程学分，并可追溯地重算科学文化成绩与综测"
+  default_prompt: "使用 $recalculate-grades 按我确认的规则筛选不及格人员，核对课程学分并重算科学文化成绩和综测。"

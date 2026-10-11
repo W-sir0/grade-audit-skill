@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "term": "虚构学期-1",
+  "rules": {
+    "rule_source": "虚构示例任务规则 v1（非学校通用政策）",
+    "pass_threshold": "60",
+    "grade_map": {
+      "优秀": "95",
+      "良好": "85",
+      "中等": "75",
+      "及格": "65"
+    },
+    "academic_weight": "0.7",
+    "assessment_weight": "0.3",
+    "nonfailure_mode": "original",
+    "zero_is_failure": false,
+    "unresolved": {
+      "deferred": "block",
+      "pending": "block",
+      "absent": "block"
+    }
+  },
+  "status": "ok",
+  "roster_count": 2,
+  "ok_count": 2,
+  "blocked_student_ids": [],
+  "failed_student_ids": [
+    "DEMO-001"
+  ],
+  "results": [
+    {
+      "student_id": "DEMO-001",
+      "status": "ok",
+      "errors": [],
+      "courses": [
+        {
+          "course_id": "C01",
+          "name": "示例课程一",
+          "score": "59",
+          "credits": "2",
+          "status": "normal",
+          "score_source": "虚构成绩表/C01/row-2",
+          "credit_source": "虚构培养方案/C01/page-1",
+          "exam_record_id": "EXAMPLE-C01-1",
+          "normalized_score": "59",
+          "decision": "failed_zero",
+          "counted_score": "0",
+          "included_credits": "2",
+          "weighted_points": "0"
+        },
+        {
+          "course_id": "C02",
+          "name": "示例课程二",
+          "score": "80",
+          "credits": "2",
+          "status": "normal",
+          "score_source": "虚构成绩表/C02/row-2",
+          "credit_source": "虚构培养方案/C02/page-1",
+          "exam_record_id": "EXAMPLE-C02-1",
+          "normalized_score": "80",
+          "decision": "normal",
+          "counted_score": "80",
+          "included_credits": "2",
+          "weighted_points": "160"
+        }
+      ],
+      "name": "示例同学甲",
+      "class_name": "虚构班级",
+      "failed_course_ids": [
+        "C01"
+      ],
+      "unresolved_count": 0,
+      "mode": "recalculate",
+      "weighted_points_total": "160",
+      "included_credits_total": "4",
+      "academic_unrounded": "40",
+      "academic_display": "40.00",
+      "assessment": "80",
+      "composite_unrounded": "52.0",
+      "composite_display": "52.00"
+    },
+    {
+      "student_id": "DEMO-002",
+      "status": "ok",
+      "errors": [],
+      "courses": [
+        {
+          "course_id": "C01",
+          "name": "示例课程一",
+          "score": "优秀",
+          "credits": "2",
+          "status": "normal",
+          "score_source": "虚构成绩表/C01/row-2",
+          "credit_source": "虚构培养方案/C01/page-1",
+          "exam_record_id": "EXAMPLE-C01-1",
+          "normalized_score": "95",
+          "decision": "normal",
+          "counted_score": "95",
+          "included_credits": "2",
+          "weighted_points": "190"
+        },
+        {
+          "course_id": "C02",
+          "name": "示例课程二",
+          "score": "及格",
+          "credits": "1",
+          "status": "normal",
+          "score_source": "虚构成绩表/C02/row-2",
+          "credit_source": "虚构培养方案/C02/page-1",
+          "exam_record_id": "EXAMPLE-C02-1",
+          "normalized_score": "65",
+          "decision": "normal",
+          "counted_score": "65",
+          "included_credits": "1",
+          "weighted_points": "65"
+        }
+      ],
+      "name": "示例同学乙",
+      "class_name": "虚构班级",
+      "failed_course_ids": [],
+      "unresolved_count": 0,
+      "mode": "original",
+      "weighted_points_total": "255",
+      "included_credits_total": "3",
+      "academic_unrounded": "88.125",
+      "academic_display": "88.13",
+      "assessment": "90",
+      "composite_unrounded": "88.6875",
+      "composite_display": "88.69"
+    }
+  ]
+}
