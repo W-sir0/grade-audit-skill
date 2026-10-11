@@ -60,4 +60,6 @@ normal：非零且小于及格线即挂科记 0；等于及格线视为通过。
 
 全局范围/规则错误返回 status=invalid、errors 和空 results；课程或人员错误返回 status=blocked，仅受影响人员没有计算结果。其余人员仍可核验。failed_student_ids 只包含 status=ok 且至少一门已确认挂科课程的人员；blocked_student_ids 必须另行报告，不能视为通过。
 
-每人输出课程原始字段、normalized_score、decision、counted_score、included_credits、weighted_points，以及总分子、总学分、精确计算值和两位显示值。original 模式仍输出逐课核验值，但 academic_unrounded 来自原表。报告包含 rules 快照，必须同时保存标准化输入，才能完整重现考评分、名单及来源。审计文件也含敏感成绩，不上传项目仓库。
+每人输出课程原始字段、normalized_score、decision、counted_score、included_credits、weighted_points，以及总分子、总学分、精确计算值和两位显示值。original 模式仍输出逐课核验值，但 academic_unrounded 来自原表。报告包含 rules 快照，必须同时保存标准化输入，才能完整重现考评分、名单及来源。报告亦保存 assessment_source、course_list_source 和 original 模式的 original_average_source。审计文件也含敏感成绩，不上传项目仓库。
+
+CLI 另以退出码 3 表示报告写入失败，旧报告不会被覆盖且临时文件会被清理；不要把旧报告当作这次结果。拒绝 NaN、Infinity 等非标准 JSON 常量，包括额外字段中的常量。

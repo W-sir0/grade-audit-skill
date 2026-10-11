@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / 'skills/recalculate-grades/scripts/audit_grades.py'
@@ -209,6 +210,46 @@ class GradeAuditTests(unittest.TestCase):
             run = subprocess.run([sys.executable, str(SCRIPT), str(inp), '--output', str(inp)], capture_output=True)
             self.assertNotEqual(run.returncode, 0)
             self.assertEqual(inp.read_text(), original)
+            self.assertNotIn(b'Traceback', run.stderr)
+
+    def test_report_contains_noncourse_sources(self):
+        rows = module.audit(self.data)['results']
+        self.assertEqual(rows[0]['assessment_source'], self.data['students'][0]['assessment_source'])
+        self.assertEqual(rows[0]['course_list_source'], self.data['students'][0]['course_list_source'])
+        self.assertEqual(rows[1]['original_average_source'], self.data['students'][1]['original_average_source'])
+
+    def test_atomic_report_failure_cleans_tempfile_and_preserves_previous_report(self):
+        with tempfile.TemporaryDirectory() as folder:
+            out = Path(folder) / 'report.json'
+            out.write_text('previous')
+            with patch.object(module.os, 'replace', side_effect=OSError('simulated write failure')):
+                with self.assertRaises(OSError):
+                    module.write_report(out, module.audit(self.data))
+            self.assertEqual(out.read_text(), 'previous')
+            self.assertEqual(list(Path(folder).iterdir()), [out])
+
+    def test_serialization_failure_cleans_tempfile(self):
+        with tempfile.TemporaryDirectory() as folder:
+            with self.assertRaises(ValueError):
+                module.write_report(Path(folder) / 'report.json', {'bad': float('nan')})
+            self.assertEqual(list(Path(folder).iterdir()), [])
+
+    def test_cli_rejects_nan_even_in_extra_metadata(self):
+        with tempfile.TemporaryDirectory() as folder:
+            inp, out = Path(folder) / 'input.json', Path(folder) / 'report.json'
+            self.data['extra'] = float('nan')
+            inp.write_text(json.dumps(self.data))
+            run = subprocess.run([sys.executable, str(SCRIPT), str(inp), '--output', str(out)], capture_output=True)
+            self.assertEqual(run.returncode, 2)
+            self.assertEqual(json.loads(out.read_text())['status'], 'invalid')
+
+    def test_cli_output_failure_has_distinct_exit_code(self):
+        with tempfile.TemporaryDirectory() as folder:
+            inp = Path(folder) / 'input.json'
+            inp.write_text(json.dumps(self.data))
+            run = subprocess.run([sys.executable, str(SCRIPT), str(inp), '--output', folder], capture_output=True)
+            self.assertEqual(run.returncode, 3)
+            self.assertNotIn(b'Traceback', run.stderr)
 
 
 if __name__ == '__main__':

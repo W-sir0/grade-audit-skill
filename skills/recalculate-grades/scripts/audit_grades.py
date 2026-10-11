@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import tempfile
+import sys
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP, localcontext
 from pathlib import Path
 
@@ -74,12 +75,14 @@ def audit_student(student, rules, threshold, academic_weight, assessment_weight)
         result['class_name'] = text(student.get('class_name'), 'class_name')
         assessment = number(student.get('assessment'), 'assessment')
         text(student.get('assessment_source'), 'assessment_source')
+        result['assessment_source'] = student['assessment_source']
         expected = student.get('expected_course_ids')
         require(isinstance(expected, list) and bool(expected), 'expected_course_ids: required nonempty list')
         for cid in expected:
             text(cid, 'expected_course_id')
         require(len(set(expected)) == len(expected), 'duplicate expected course IDs')
         text(student.get('course_list_source'), 'course_list_source')
+        result['course_list_source'] = student['course_list_source']
         courses = student.get('courses')
         require(isinstance(courses, list) and bool(courses), 'courses: required nonempty list')
         ids = [text(c.get('course_id'), 'course_id') for c in courses if isinstance(c, dict)]
@@ -139,6 +142,7 @@ def audit_student(student, rules, threshold, academic_weight, assessment_weight)
             require(unresolved_count == 0, 'original average cannot be reused with unresolved courses')
             science = number(student.get('original_average'), 'original_average')
             text(student.get('original_average_source'), 'original_average_source')
+            result['original_average_source'] = student['original_average_source']
             mode = 'original'
         else:
             science = numerator / denominator
@@ -191,16 +195,18 @@ def audit(payload):
 
 
 def write_report(path, report):
+    """Replace the report atomically and remove temporary data even on failure."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=path.parent, delete=False) as temp:
-        temp_path = temp.name
-        json.dump(report, temp, ensure_ascii=False, indent=2, default=decimal_text)
-        temp.write('\n')
+    temp_path = None
     try:
+        with tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=path.parent, delete=False) as temp:
+            temp_path = temp.name
+            json.dump(report, temp, ensure_ascii=False, indent=2, default=decimal_text, allow_nan=False)
+            temp.write('\n')
         os.replace(temp_path, path)
     finally:
-        if os.path.exists(temp_path):
+        if temp_path is not None and os.path.exists(temp_path):
             os.unlink(temp_path)
 
 
@@ -212,19 +218,28 @@ def unique_object(pairs):
     return result
 
 
+def reject_constant(value):
+    raise AuditError(f'nonstandard JSON constant: {value}')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input', type=Path)
     parser.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
-    require(args.input.resolve() != args.output.resolve(), 'input and output must differ')
+    if args.input.resolve() == args.output.resolve():
+        parser.error('input and output must differ')
     try:
         payload = json.loads(args.input.read_text(encoding='utf-8'), parse_float=Decimal,
-                             object_pairs_hook=unique_object)
+                             object_pairs_hook=unique_object, parse_constant=reject_constant)
         report = audit(payload)
     except (AuditError, OSError, ValueError, TypeError, AttributeError) as exc:
         report = {'schema_version': 1, 'status': 'invalid', 'errors': [str(exc)], 'results': []}
-    write_report(args.output, report)
+    try:
+        write_report(args.output, report)
+    except (OSError, ValueError, TypeError) as exc:
+        print(f'Cannot write audit report: {exc}', file=sys.stderr)
+        return 3
     print(f"Audit {report['status']}; report written.")
     return 0 if report['status'] == 'ok' else 2
 

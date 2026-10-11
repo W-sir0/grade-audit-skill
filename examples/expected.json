@@ -66,6 +66,8 @@
       ],
       "name": "示例同学甲",
       "class_name": "虚构班级",
+      "assessment_source": "虚构考评表/row-2",
+      "course_list_source": "虚构选课清单/DEMO-001",
       "failed_course_ids": [
         "C01"
       ],
@@ -117,8 +119,11 @@
       ],
       "name": "示例同学乙",
       "class_name": "虚构班级",
+      "assessment_source": "虚构考评表/row-3",
+      "course_list_source": "虚构选课清单/DEMO-002",
       "failed_course_ids": [],
       "unresolved_count": 0,
+      "original_average_source": "虚构成绩汇总表/row-3",
       "mode": "original",
       "weighted_points_total": "255",
       "included_credits_total": "3",

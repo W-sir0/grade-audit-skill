@@ -1,5 +1,11 @@
 # Grade Audit Skill · 课程成绩重算与综测核对
 
+[![Tests](https://github.com/W-sir0/grade-audit-skill/actions/workflows/tests.yml/badge.svg)](https://github.com/W-sir0/grade-audit-skill/actions/workflows/tests.yml)
+![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+A reusable AI skill with deterministic grade recalculation, credit validation and traceable audit reports.
+
 把成绩表核对流程做成可复用的 AI Skill，并用确定性脚本计算和验证。适用于按指定名单筛选不及格人员、核查逐课学分、重算科学文化成绩和综合测评、核对缓考补录。
 
 **规则可配置，计算可追溯，问题可定位。** 示例中的学校规则仅作演示；真实任务须先确认本校、本专业、本学期的计算口径。
@@ -12,6 +18,18 @@
 - 校验课程清单、学分来源、等级换算和考试记录；缺失或冲突时阻止相关人员出分。
 - 使用 Decimal，综测默认使用未提前取整的科学文化成绩；展示采用四舍五入两位。
 - 保留逐课计算、规则快照、分子、分母和阻塞原因。
+
+## 快速体验（无需 AI 环境）
+
+Python 3.10+，无需安装第三方依赖。原始 Excel/PDF/照片先由助手或人工核验并转换为标准 JSON；本脚本不直接读取或写入 Excel。
+
+```bash
+cd grade-audit-skill
+python3 skills/recalculate-grades/scripts/audit_grades.py examples/input.json --output /tmp/grade-audit-demo.json
+python3 -m unittest discover -s tests -v
+```
+
+数据格式见 [数据与计算协议](skills/recalculate-grades/references/data-contract.md)。退出码 0 表示全部通过；2 表示存在阻塞或输入无效，必须检查报告；3 表示报告写入失败。写入失败时原报告不会被覆盖。无效输入会生成 `status=invalid` 的报告，避免旧报告被误认作新结果。输入和输出不可使用同一路径。
 
 ## 安装 Skill
 
@@ -31,18 +49,6 @@ cp -R grade-audit-skill/skills/recalculate-grades "${CODEX_HOME:-$HOME/.codex}/s
 
 提供本次成绩表、课程学分依据、指定名单和计算规则。名单可来自照片，模糊处仍需人工核验。
 
-## 单独运行计算脚本
-
-Python 3.10+，无需安装第三方依赖。原始 Excel/PDF/照片先由助手或人工核验并转换为标准 JSON；本脚本不直接读取或写入 Excel。
-
-```bash
-cd grade-audit-skill
-python3 skills/recalculate-grades/scripts/audit_grades.py examples/input.json --output /tmp/grade-audit-demo.json
-python3 -m unittest discover -s tests -v
-```
-
-数据格式见 [数据与计算协议](skills/recalculate-grades/references/data-contract.md)。退出码 0 表示全部通过；2 表示存在阻塞或输入无效，必须检查报告。无效输入会生成 `status=invalid` 的报告，避免旧报告被误认作新结果。输入和输出不可使用同一路径。
-
 ## 虚构示例
 
 `examples/` 中的姓名、学号、班级、课程与来源均为虚构。
@@ -53,6 +59,8 @@ python3 -m unittest discover -s tests -v
 | DEMO-002 | 无挂科，按演示配置沿用原加权分 88.125 | 88.13 | 90 | 88.69 |
 
 第二人的综测使用 88.125 计算。更多测试覆盖 59/60 边界、等级成绩、0 分歧义、缓考补录、重复姓名/学号、漏课、缺失学分、未取整计算和 CLI 失败退出码。
+
+测试与贡献说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。报告包含逐课来源、考评分来源及复用原加权分的依据。
 
 ## 项目结构
 
